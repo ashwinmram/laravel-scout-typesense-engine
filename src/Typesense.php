@@ -3,7 +3,6 @@
 namespace Devloops\LaravelTypesense;
 
 use Typesense\Client;
-use Typesense\Document;
 use Typesense\Collection;
 use GuzzleHttp\Exception\GuzzleException;
 use Typesense\Exceptions\ObjectNotFound;
@@ -58,7 +57,7 @@ class Typesense
             return $index;
         } catch (ObjectNotFound $exception) {
             $this->client->getCollections()->create(
-              $model->getCollectionSchema()
+                $model->getCollectionSchema()
             );
 
             return $this->client->getCollections()->{$model->searchableAs()};
@@ -82,22 +81,10 @@ class Typesense
      * @param                                   $array
      *
      * @throws \Typesense\Exceptions\TypesenseClientError
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function upsertDocument(Collection $collectionIndex, $array): void
     {
-        /**
-         * @var $document Document
-         */
-        $document = $collectionIndex->getDocuments()[$array['id']];
-
-        try {
-            $document->retrieve();
-            $document->delete();
-            $collectionIndex->getDocuments()->create($array);
-        } catch (ObjectNotFound $e) {
-            $collectionIndex->getDocuments()->create($array);
-        }
+        $collectionIndex->getDocuments()->upsert($array);
     }
 
     /**
@@ -114,5 +101,5 @@ class Typesense
         $document = $collectionIndex->getDocuments()[(string)$modelId];
         $document->delete();
     }
-
 }
+
